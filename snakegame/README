@@ -1,1 +1,2 @@
-snakegame/
+#README
+150行贪吃蛇游戏，wasd控制方向，space控制暂停和继续，enter控制开始与蛇死亡后重新开始
