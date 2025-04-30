@@ -1,1 +1,2 @@
-tetris/
+#README
+俄罗斯方块，运行main.pyw控制旋转，ad控制左右，s加速向下，space控制暂停和继续，enter控制开始与死亡后重新开始
