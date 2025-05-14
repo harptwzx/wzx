@@ -1,10 +1,22 @@
 from itertools import cycle
 import random
 import sys
-
+import os
 import pygame
 from pygame.locals import *
 
+# 设置动态获取资源文件路径的函数
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+# 设置常量
 FPS = 30
 SCREENWIDTH = 288
 SCREENHEIGHT = 512
@@ -17,34 +29,34 @@ IMAGES, SOUNDS, HITMASKS = {}, {}, {}
 PLAYERS_LIST = (
     # red box
     (
-        'assets/sprites/redbox-upflap.png',
-        'assets/sprites/redbox-midflap.png',
-        'assets/sprites/redbox-downflap.png',
+        resource_path('assets/sprites/redbox-upflap.png'),
+        resource_path('assets/sprites/redbox-midflap.png'),
+        resource_path('assets/sprites/redbox-downflap.png'),
     ),
     # blue box
     (
-        'assets/sprites/bluebox-upflap.png',
-        'assets/sprites/bluebox-midflap.png',
-        'assets/sprites/bluebox-downflap.png',
+        resource_path('assets/sprites/bluebox-upflap.png'),
+        resource_path('assets/sprites/bluebox-midflap.png'),
+        resource_path('assets/sprites/bluebox-downflap.png'),
     ),
     # yellow box
     (
-        'assets/sprites/yellowbox-upflap.png',
-        'assets/sprites/yellowbox-midflap.png',
-        'assets/sprites/yellowbox-downflap.png',
+        resource_path('assets/sprites/yellowbox-upflap.png'),
+        resource_path('assets/sprites/yellowbox-midflap.png'),
+        resource_path('assets/sprites/yellowbox-downflap.png'),
     ),
 )
 
 # list of backgrounds
 BACKGROUNDS_LIST = (
-    'assets/sprites/background-day.png',
-    'assets/sprites/background-night.png',
+    resource_path('assets/sprites/background-day.png'),
+    resource_path('assets/sprites/background-night.png'),
 )
 
 # list of pipes
 PIPES_LIST = (
-    'assets/sprites/pipe-green.png',
-    'assets/sprites/pipe-red.png',
+    resource_path('assets/sprites/pipe-green.png'),
+    resource_path('assets/sprites/pipe-red.png'),
 )
 
 try:
@@ -56,28 +68,27 @@ except NameError:
 def main():
     global SCREEN, FPSCLOCK
     pygame.init()
+    pygame.mixer.init()
     FPSCLOCK = pygame.time.Clock()
-    # Fullscreen scaled output
     SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT), pygame.SCALED | pygame.FULLSCREEN)
     pygame.display.set_caption('Flappy Box')
 
     # numbers sprites for score display
-    IMAGES['numbers'] = (pygame.image.load('assets/sprites/0.png').convert_alpha(), pygame.image.load('assets/sprites/1.png').convert_alpha(), pygame.image.load('assets/sprites/2.png').convert_alpha(), pygame.image.load('assets/sprites/3.png').convert_alpha(), pygame.image.load('assets/sprites/4.png').convert_alpha(), pygame.image.load('assets/sprites/5.png').convert_alpha(), pygame.image.load('assets/sprites/6.png').convert_alpha(), pygame.image.load('assets/sprites/7.png').convert_alpha(), pygame.image.load('assets/sprites/8.png').convert_alpha(), pygame.image.load('assets/sprites/9.png').convert_alpha())
+    IMAGES['numbers'] = tuple(pygame.image.load(resource_path(f'assets/sprites/{i}.png')).convert_alpha() for i in range(10))
 
     # game over sprite
-    IMAGES['gameover'] = pygame.image.load('assets/sprites/gameover.png').convert_alpha()
+    IMAGES['gameover'] = pygame.image.load(resource_path('assets/sprites/gameover.png')).convert_alpha()
     # message sprite for welcome screen
-    IMAGES['message'] = pygame.image.load('assets/sprites/message.png').convert_alpha()
+    IMAGES['message'] = pygame.image.load(resource_path('assets/sprites/message.png')).convert_alpha()
     # base (ground) sprite
-    IMAGES['base'] = pygame.image.load('assets/sprites/base.png').convert_alpha()
+    IMAGES['base'] = pygame.image.load(resource_path('assets/sprites/base.png')).convert_alpha()
 
     # sounds
     soundExt = '.ogg'
-
-    SOUNDS['die'] = pygame.mixer.Sound('assets/audio/die' + soundExt)
-    SOUNDS['hit'] = pygame.mixer.Sound('assets/audio/hit' + soundExt)
-    SOUNDS['point'] = pygame.mixer.Sound('assets/audio/point' + soundExt)
-    SOUNDS['wing'] = pygame.mixer.Sound('assets/audio/wing' + soundExt)
+    SOUNDS['die'] = pygame.mixer.Sound(resource_path(f'assets/audio/die{soundExt}'))
+    SOUNDS['hit'] = pygame.mixer.Sound(resource_path(f'assets/audio/hit{soundExt}'))
+    SOUNDS['point'] = pygame.mixer.Sound(resource_path(f'assets/audio/point{soundExt}'))
+    SOUNDS['wing'] = pygame.mixer.Sound(resource_path(f'assets/audio/wing{soundExt}'))
 
     while True:
         # select random background sprites
@@ -424,6 +435,7 @@ def checkCrash(player, upperPipes, lowerPipes):
         pipeW = IMAGES['pipe'][0].get_width()
         pipeH = IMAGES['pipe'][0].get_height()
 
+       
         for uPipe, lPipe in zip(upperPipes, lowerPipes):
             # upper and lower pipe rects
             uPipeRect = pygame.Rect(uPipe['x'], uPipe['y'], pipeW, pipeH)
@@ -454,8 +466,8 @@ def pixelCollision(rect1, rect2, hitmask1, hitmask2):
     x1, y1 = rect.x - rect1.x, rect.y - rect1.y
     x2, y2 = rect.x - rect2.x, rect.y - rect2.y
 
-    for x in xrange(rect.width):
-        for y in xrange(rect.height):
+    for x in range(rect.width):
+        for y in range(rect.height):
             if hitmask1[x1 + x][y1 + y] and hitmask2[x2 + x][y2 + y]:
                 return True
     return False
@@ -464,9 +476,9 @@ def pixelCollision(rect1, rect2, hitmask1, hitmask2):
 def getHitmask(image):
     """returns a hitmask using an image's alpha."""
     mask = []
-    for x in xrange(image.get_width()):
+    for x in range(image.get_width()):
         mask.append([])
-        for y in xrange(image.get_height()):
+        for y in range(image.get_height()):
             mask[x].append(bool(image.get_at((x, y))[3]))
     return mask
 
